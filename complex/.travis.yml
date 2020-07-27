@@ -1,0 +1,20 @@
+sudo: required
+services:
+    - docker
+
+before_install:
+    - docker build -t pestape1/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+    - docker run -e CI=true pestape1/react-test npm test
+
+after_success:
+    - docker build -t pestape1/mult-client ./client
+    - docker build -t pestape1/mult-nginx ./nginx
+    - docker build -t pestape1/mult-server ./server
+    - docker build -t pestape1/mult-worker ./worker
+    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+    - docker push pestape1/mult-client 
+    - docker push pestape1/mult-nginx 
+    - docker push pestape1/mult-server 
+    - docker push pestape1/mult-worker 
